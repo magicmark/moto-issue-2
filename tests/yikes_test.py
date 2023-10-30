@@ -1,8 +1,6 @@
-import unittest
 import pytest
 import boto3
 import moto
-from moto_issue_demo.order_breakfast import main as order_breakfast
 
 @pytest.fixture(autouse=True, scope="function")
 def dynamodb():
@@ -23,18 +21,17 @@ def dynamodb():
         yield dynamodb
 
 
-def test_breakfast_order(dynamodb):
+def test_yikes(dynamodb):
     dynamodb.Table("meal-orders").put_item(
         Item={
             "customer": "mark",
             "mealtime": "breakfast",
-            "lock": {
-                "acquired_at": 123
-            }
         }
     )
 
-    try:
-        order_breakfast()
-    except BaseException as err:
-        assert 'Item' in err.response["CancellationReasons"][0]
+    assert 'Item' not in dynamodb.Table("meal-orders").get_item(
+        Key={
+            "customer": "mark",
+            "mealtime": "lunch",
+        }
+    )
